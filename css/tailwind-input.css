@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@source "../index.html";
+@source "../js/**/*.js";
+
+@theme {
+  --color-dark-900: #0f0f0f;
+  --color-dark-800: #1a1a2e;
+  --color-dark-700: #16213e;
+  --color-book-cream: #F4ECD8;
+  --color-book-leather: #3E2723;
+  --color-book-leatherLight: #5D4037;
+  --color-book-leatherMid: #4E342E;
+  --color-book-gold: #B8860B;
+  --color-book-goldLight: #D4A843;
+  --color-book-sepia: #8B7355;
+  --color-book-warmGray: #BCAAA4;
+  --color-book-warmLight: #D7CCC8;
+}

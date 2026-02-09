@@ -1,0 +1,405 @@
+/* Base styles */
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 100vh;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+#app {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 100%);
+}
+
+/* Screen transitions */
+.screen {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.screen.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(99, 102, 241, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background: rgba(51, 65, 85, 0.5);
+    border: 1px solid rgba(100, 116, 139, 0.3);
+    color: #e2e8f0;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: rgba(71, 85, 105, 0.5);
+    border-color: rgba(100, 116, 139, 0.5);
+}
+
+/* Color picker buttons */
+.color-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.color-btn:hover {
+    transform: scale(1.1);
+}
+
+.color-btn.active {
+    border-color: #6366f1;
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+}
+
+/* Eraser button */
+.eraser-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(93, 64, 55, 0.4);
+    color: #BCAAA4;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.eraser-btn:hover {
+    transform: scale(1.1);
+    background: rgba(93, 64, 55, 0.6);
+}
+
+.eraser-btn.active {
+    border-color: #D4A843;
+    box-shadow: 0 0 10px rgba(212, 168, 67, 0.5);
+    background: rgba(212, 168, 67, 0.2);
+    color: #D4A843;
+}
+
+/* Thickness buttons */
+.thickness-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    background: rgba(51, 65, 85, 0.3);
+    border: 1px solid transparent;
+    color: #94a3b8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.thickness-btn:hover {
+    background: rgba(71, 85, 105, 0.5);
+}
+
+.thickness-btn.active {
+    border-color: #6366f1;
+    background: rgba(99, 102, 241, 0.2);
+    color: #c7d2fe;
+}
+
+/* Canvas container - ruled lines */
+#drawing-canvas-container {
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 47px,
+        rgba(100, 116, 139, 0.12) 47px,
+        rgba(100, 116, 139, 0.12) 48px
+    );
+    background-position: 0 20px;
+}
+
+/* Canvas */
+#drawing-canvas {
+    touch-action: none;
+    cursor: crosshair;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.animate-scale-in {
+    animation: scaleIn 0.4s ease forwards;
+}
+
+/* Gallery card */
+.gallery-card {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gallery-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(71, 85, 105, 0.5);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.5);
+}
+
+/* Focus styles */
+input:focus, button:focus {
+    outline: none;
+}
+
+button:focus-visible, input:focus-visible {
+    outline: 2px solid #6366f1;
+    outline-offset: 2px;
+}
+
+/* Visitor selection cards */
+.visitor-card {
+    cursor: pointer;
+}
+
+.visitor-card:hover {
+    transform: translateY(-2px);
+}
+
+.visitor-card img {
+    transition: transform 0.2s ease;
+}
+
+.visitor-card:hover img {
+    transform: scale(1.05);
+}
+
+/* Admin delete button */
+.delete-visitor-btn {
+    transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+/* ============ BROWSE FEEDBACK ============ */
+
+/* Swipeable feedback area */
+#browse-feedback-area {
+    position: relative;
+    overflow: hidden;
+    touch-action: pan-y;
+}
+
+.browse-slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
+}
+
+.browse-slide img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.browse-slide-current {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.browse-slide-exit-left {
+    transform: translateX(-100%);
+    opacity: 0;
+}
+
+.browse-slide-exit-right {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+.browse-slide-enter-left {
+    transform: translateX(-100%);
+    opacity: 0;
+    transition: none;
+}
+
+.browse-slide-enter-right {
+    transform: translateX(100%);
+    opacity: 0;
+    transition: none;
+}
+
+/* Swipe hint indicator */
+.swipe-hint {
+    animation: swipeHint 2s ease-in-out 1s 1;
+    opacity: 0;
+}
+
+@keyframes swipeHint {
+    0%, 100% { opacity: 0; transform: translateX(0); }
+    20% { opacity: 0.7; transform: translateX(0); }
+    50% { opacity: 0.7; transform: translateX(-20px); }
+    80% { opacity: 0.7; transform: translateX(0); }
+}
+
+/* ============ BOOK THEME ============ */
+.book-theme {
+    background: linear-gradient(135deg, #4E342E 0%, #3E2723 100%);
+}
+
+.book-theme .btn-primary {
+    background: linear-gradient(135deg, #B8860B 0%, #D4A843 100%);
+    box-shadow: 0 4px 20px rgba(184, 134, 11, 0.3);
+}
+
+.book-theme .btn-primary:hover {
+    box-shadow: 0 6px 25px rgba(184, 134, 11, 0.4);
+}
+
+.book-theme .color-btn.active {
+    border-color: #D4A843;
+    box-shadow: 0 0 10px rgba(212, 168, 67, 0.5);
+}
+
+.book-theme #drawing-canvas-container {
+    background-color: #F4ECD8;
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 59px,
+        rgba(160, 130, 90, 0.25) 59px,
+        rgba(160, 130, 90, 0.25) 60px
+    );
+    background-position: 0 20px;
+    border: 1px solid rgba(180, 160, 120, 0.5);
+    box-shadow: inset 0 2px 8px rgba(139, 115, 85, 0.15);
+}
+
+.book-theme #browse-feedback-area {
+    background-color: #F4ECD8;
+    border: 1px solid rgba(180, 160, 120, 0.5);
+    box-shadow: inset 0 2px 8px rgba(139, 115, 85, 0.15);
+}
+
+/* Browse visitor list */
+.browse-list-item {
+    cursor: pointer;
+}
+
+.browse-list-item:hover {
+    background: rgba(212, 168, 67, 0.1);
+}
+
+#browse-visitor-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+#browse-visitor-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#browse-visitor-list::-webkit-scrollbar-thumb {
+    background: rgba(93, 64, 55, 0.5);
+    border-radius: 2px;
+}
+
+/* Responsive adjustments for portrait mode fallback */
+@media (orientation: portrait) {
+    /* Feedback top bar: wrap items on narrow screens */
+    #feedback-screen > div:first-child {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    /* Hide dividers on narrow screens */
+    #feedback-screen > div:first-child > .w-px {
+        display: none;
+    }
+
+    #admin-screen > div:last-child {
+        flex-direction: column;
+    }
+
+    #admin-screen > div:last-child > div:first-child {
+        width: 100%;
+    }
+}

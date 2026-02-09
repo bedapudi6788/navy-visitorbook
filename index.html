@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f0f0f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Visitor Book</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+    <!-- Tailwind CSS (compiled locally) -->
+    <link rel="stylesheet" href="css/tailwind.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/app.css">
+</head>
+<body class="bg-dark-900 text-slate-50 overflow-hidden">
+    <div id="app" class="w-screen h-screen relative">
+
+        <!-- Splash Screen -->
+        <section id="splash-screen" class="screen active flex items-center justify-center">
+            <div class="text-center animate-fade-in">
+                <img src="./home_page_logo.png" alt="Logo" class="w-96 h-96 mx-auto object-contain">
+            </div>
+        </section>
+
+        <!-- Home Screen -->
+        <section id="home-screen" class="screen flex flex-col items-start justify-end gap-4 p-8 pb-16 relative"
+                 style="background: url('./front.jpg') center/cover no-repeat;">
+            <!-- Overlay for readability -->
+            <div class="absolute inset-0 bg-black/40"></div>
+
+            <button id="btn-new-feedback" class="relative z-10 text-xl px-12 py-5 rounded-2xl text-white font-medium border border-white/30 hover:bg-white/10 transition-colors cursor-pointer">
+                New Feedback
+            </button>
+
+            <button id="btn-browse-feedback" class="relative z-10 btn-secondary flex items-center gap-3 px-8 py-4 rounded-2xl text-lg">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                Archives
+            </button>
+
+            <!-- Install App Button (hidden by default) -->
+            <button id="btn-install-app" class="relative z-10 hidden items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Install App
+            </button>
+
+            <!-- Admin Button -->
+            <button id="btn-admin" class="absolute bottom-6 right-6 z-10 text-slate-400 hover:text-slate-200 transition-colors p-2" title="Admin">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </button>
+        </section>
+
+        <!-- Photo Selection Screen -->
+        <section id="photo-screen" class="screen flex flex-col items-center justify-center gap-4 p-8 overflow-y-auto">
+            <h2 class="text-2xl font-light text-slate-300">Select Yourself <span class="text-base text-slate-500">(photo optional)</span></h2>
+
+            <!-- Pre-registered Visitors -->
+            <div id="preregistered-section" class="hidden w-full max-w-3xl">
+                <div id="preregistered-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 mb-6">
+                    <!-- Pre-registered visitors will be populated here -->
+                </div>
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="flex-1 h-px bg-slate-700"></div>
+                    <span class="text-slate-500 text-sm">or add new</span>
+                    <div class="flex-1 h-px bg-slate-700"></div>
+                </div>
+            </div>
+
+            <!-- Photo Preview (shown after selection) -->
+            <div id="photo-preview-container" class="hidden mb-2">
+                <div class="relative">
+                    <img id="photo-preview" class="w-32 h-32 object-cover rounded-full border-4 border-indigo-500 shadow-lg shadow-indigo-500/20">
+                    <button id="btn-retake-photo" class="absolute -bottom-2 -right-2 bg-slate-700 hover:bg-slate-600 p-2 rounded-full transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Name Input -->
+            <div id="name-input-container" class="w-full max-w-xs flex flex-col gap-2">
+                <input type="text" id="photo-name-input" placeholder="Your name"
+                       class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-center text-lg placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+                <input type="text" id="photo-designation-input" placeholder="Your designation"
+                       class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-center text-lg placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+            </div>
+
+            <!-- Photo Buttons -->
+            <div id="photo-buttons" class="flex gap-4">
+                <label class="btn-secondary flex flex-col items-center gap-2 px-6 py-4 rounded-2xl cursor-pointer">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Take Photo</span>
+                    <input type="file" accept="image/*" capture="user" class="hidden" id="camera-input">
+                </label>
+
+                <label class="btn-secondary flex flex-col items-center gap-2 px-6 py-4 rounded-2xl cursor-pointer">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Choose Photo</span>
+                    <input type="file" accept="image/*" class="hidden" id="gallery-input">
+                </label>
+            </div>
+
+            <button id="btn-continue-photo" class="btn-primary px-12 py-4 rounded-xl text-lg">
+                Continue
+            </button>
+
+            <button id="btn-back-photo" class="text-slate-500 hover:text-slate-300 transition-colors mt-2">
+                ← Back
+            </button>
+        </section>
+
+        <!-- Feedback Writing Screen (Top Bar Layout) -->
+        <section id="feedback-screen" class="screen book-theme flex flex-col p-4 gap-3">
+            <!-- Top Bar -->
+            <div class="flex items-center gap-6 bg-book-leather/80 rounded-2xl px-8 py-5 shrink-0 border border-book-leatherLight/50">
+                <!-- Logo (left) -->
+                <img src="./logo.png" alt="Logo" style="height: 80px;" class="object-contain opacity-70">
+
+                <!-- Back Button -->
+                <button id="btn-back-feedback" class="text-book-warmLight hover:text-white transition-colors text-lg shrink-0">
+                    ← Back
+                </button>
+
+                <!-- Divider -->
+                <div class="w-px bg-book-leatherLight shrink-0" style="height: 60px;"></div>
+
+                <!-- Pen Colors -->
+                <div class="flex items-center gap-3 shrink-0">
+                    <p class="text-base text-book-warmGray">Ink</p>
+                    <div class="flex gap-2.5" id="color-options">
+                        <button class="color-btn active" data-color="#1B1B1B" style="background: #1B1B1B"></button>
+                        <button class="color-btn" data-color="#00308F" style="background: #00308F"></button>
+                        <button class="color-btn" data-color="#8B4513" style="background: #8B4513"></button>
+                        <button class="color-btn" data-color="#006400" style="background: #006400"></button>
+                        <button class="color-btn" data-color="#8B0000" style="background: #8B0000"></button>
+                    </div>
+                </div>
+
+                <!-- Eraser -->
+                <button id="btn-eraser" class="eraser-btn shrink-0" title="Eraser">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 20H7L3 16c-.8-.8-.8-2 0-2.8L14.6 1.6c.8-.8 2-.8 2.8 0L21.4 5.6c.8.8.8 2 0 2.8L10 20"/>
+                        <path d="M6.5 13.5L12.5 7.5"/>
+                    </svg>
+                </button>
+
+                <!-- Spacer -->
+                <div class="flex-1"></div>
+
+                <!-- Profile Photo, Name & Designation (right) -->
+                <div class="flex items-center gap-4 shrink-0">
+                    <div class="flex flex-col gap-2">
+                        <input type="text" id="visitor-name" placeholder="Your name (optional)"
+                               class="bg-book-leatherLight/50 border border-book-leatherLight rounded-xl px-5 py-3 text-lg text-center text-book-warmLight placeholder-book-warmGray focus:outline-none focus:border-book-goldLight w-56">
+                        <input type="text" id="visitor-designation" placeholder="Designation (optional)"
+                               class="bg-book-leatherLight/50 border border-book-leatherLight rounded-xl px-5 py-2 text-sm text-center text-book-warmLight placeholder-book-warmGray focus:outline-none focus:border-book-goldLight w-56">
+                    </div>
+                    <img id="feedback-photo" style="width: 120px; height: 120px;" class="object-cover rounded-full border-4 border-book-goldLight shadow-lg shadow-book-gold/20">
+                </div>
+            </div>
+
+            <!-- Canvas Area (full width) -->
+            <div class="flex-1 flex flex-col gap-3">
+                <div id="drawing-canvas-container" class="flex-1 relative rounded-2xl overflow-hidden">
+                    <canvas id="drawing-canvas" class="absolute inset-0 w-full h-full"></canvas>
+                    <div id="canvas-hint" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <p class="text-book-sepia/50 text-xl">Write your feedback here...</p>
+                    </div>
+                </div>
+
+                <!-- Bottom Actions -->
+                <div class="flex justify-between">
+                    <button id="btn-clear-canvas" class="flex items-center gap-2 bg-book-leatherLight/50 hover:bg-book-leatherLight/70 text-book-warmLight hover:text-white px-5 py-3 rounded-xl transition-colors text-lg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Clear
+                    </button>
+                    <button id="btn-submit" class="btn-primary px-10 py-4 rounded-xl text-lg flex items-center gap-3">
+                        Submit
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Thank You Screen -->
+        <section id="thankyou-screen" class="screen flex flex-col items-center justify-center gap-6 p-8">
+            <div class="animate-scale-in">
+                <svg class="w-24 h-24 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h2 class="text-4xl font-light text-center mb-2">Thank You!</h2>
+                <p class="text-slate-400 text-center">Your feedback has been saved</p>
+            </div>
+
+            <div class="flex items-center gap-6 mt-4">
+                <img id="thankyou-photo" class="w-20 h-20 object-cover rounded-full border-2 border-slate-600">
+                <div class="w-px h-16 bg-slate-700"></div>
+                <img id="thankyou-signature" class="h-20 max-w-xs object-contain rounded-lg bg-slate-800/50 p-2">
+            </div>
+
+            <p class="text-slate-600 text-sm mt-4">Returning to home...</p>
+        </section>
+
+        <!-- Browse Feedback Screen (Matches Feedback Writing Layout) -->
+        <section id="browse-screen" class="screen book-theme flex p-4 gap-4">
+            <!-- Left Panel - Visitor List -->
+            <div class="w-56 flex flex-col gap-3 shrink-0">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-book-warmGray uppercase tracking-wider">Entries</h3>
+                    <span id="page-indicator" class="text-xs text-book-warmGray">0 / 0</span>
+                </div>
+
+                <!-- Scrollable visitor list -->
+                <div id="browse-visitor-list" class="flex-1 overflow-y-auto flex flex-col gap-2 pr-1">
+                    <!-- Visitor items will be populated here -->
+                </div>
+
+                <!-- Export & Delete Buttons -->
+                <button id="btn-export-json" class="flex items-center justify-center gap-2 bg-book-leatherLight/50 hover:bg-book-leatherLight/70 text-book-warmLight hover:text-white px-4 py-2 rounded-xl transition-colors text-sm shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Export JSON
+                </button>
+                <button id="btn-delete-all" class="flex items-center justify-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 border border-red-500/30 px-4 py-2 rounded-xl transition-colors text-sm shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete All
+                </button>
+                <button id="btn-back-browse" class="text-book-warmGray hover:text-white transition-colors text-sm shrink-0">
+                    ← Back
+                </button>
+            </div>
+
+            <!-- Right Panel - Feedback Display Area -->
+            <div class="flex-1 flex flex-col gap-4">
+                <div id="browse-feedback-area" class="flex-1 relative rounded-2xl overflow-hidden">
+                    <!-- Slides will be dynamically created here -->
+                </div>
+
+                <!-- Prev / Next buttons -->
+                <div id="browse-nav" class="flex justify-between">
+                    <button id="btn-prev-page" class="flex items-center gap-2 bg-book-leatherLight/50 hover:bg-book-leatherLight/70 text-book-warmLight hover:text-white px-5 py-3 rounded-xl transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                        Previous
+                    </button>
+                    <button id="btn-next-page" class="flex items-center gap-2 bg-book-leatherLight/50 hover:bg-book-leatherLight/70 text-book-warmLight hover:text-white px-5 py-3 rounded-xl transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                        Next
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Empty state (overlays the area when no entries) -->
+                <div id="browse-empty" class="hidden absolute inset-0 flex-col items-center justify-center gap-4 text-book-warmGray">
+                    <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    <p class="text-lg">No entries yet. Be the first to leave feedback!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Gallery Screen -->
+        <section id="gallery-screen" class="screen flex flex-col p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-light text-slate-300">Gallery</h2>
+                <button id="btn-back-gallery" class="text-slate-500 hover:text-slate-300 transition-colors">
+                    ← Back to Home
+                </button>
+            </div>
+
+            <div id="gallery-container" class="flex-1 overflow-y-auto">
+                <div id="gallery-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- Entries will be populated here -->
+                </div>
+                <div id="gallery-empty" class="hidden flex-1 flex items-center justify-center text-slate-600">
+                    No entries yet. Be the first to leave feedback!
+                </div>
+            </div>
+        </section>
+
+        <!-- Admin Screen -->
+        <section id="admin-screen" class="screen flex flex-col p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-light text-slate-300">Admin - Pre-register Visitors</h2>
+                <button id="btn-back-admin" class="text-slate-500 hover:text-slate-300 transition-colors">
+                    ← Back to Home
+                </button>
+            </div>
+
+            <div class="flex-1 flex gap-6 overflow-hidden">
+                <!-- Add New Visitor Form -->
+                <div class="w-72 shrink-0 bg-slate-800/30 rounded-2xl p-6 flex flex-col gap-4">
+                    <h3 class="text-lg font-medium text-slate-300">Add Visitor</h3>
+
+                    <div class="flex flex-col items-center gap-3">
+                        <div id="admin-photo-preview-container" class="relative">
+                            <div id="admin-photo-placeholder" class="w-24 h-24 rounded-full bg-slate-700 flex items-center justify-center border-2 border-dashed border-slate-600">
+                                <svg class="w-10 h-10 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </div>
+                            <img id="admin-photo-preview" class="w-24 h-24 object-cover rounded-full border-2 border-indigo-500 hidden">
+                        </div>
+
+                        <label class="btn-secondary px-4 py-2 rounded-lg text-sm cursor-pointer">
+                            Select Photo <span class="text-slate-400">(optional)</span>
+                            <input type="file" accept="image/*" class="hidden" id="admin-photo-input">
+                        </label>
+                    </div>
+
+                    <input type="text" id="admin-name-input" placeholder="Visitor name"
+                           class="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-4 py-3 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+
+                    <input type="text" id="admin-designation-input" placeholder="Designation"
+                           class="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-4 py-3 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+
+                    <button id="btn-add-visitor" class="btn-primary py-3 rounded-xl flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Visitor
+                    </button>
+                </div>
+
+                <!-- Visitor List -->
+                <div class="flex-1 overflow-y-auto">
+                    <div id="admin-visitor-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        <!-- Pre-registered visitors will be populated here -->
+                    </div>
+                    <div id="admin-empty" class="hidden h-full flex items-center justify-center text-slate-600">
+                        No pre-registered visitors. Add some using the form.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
