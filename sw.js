@@ -1,4 +1,4 @@
-const CACHE_NAME = 'visitorbook-v4';
+const CACHE_NAME = 'visitorbook-v5';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -10,6 +10,10 @@ const ASSETS_TO_CACHE = [
     '/js/storage.js',
     '/manifest.json'
 ];
+
+function isNavigationRequest(request) {
+    return request.mode === 'navigate';
+}
 
 // Install event - cache assets
 self.addEventListener('install', (event) => {
@@ -38,7 +42,7 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// Fetch event - cache-first strategy
+// Fetch event - network-first strategy with offline fallback
 self.addEventListener('fetch', (event) => {
     // Skip non-GET requests
     if (event.request.method !== 'GET') return;
@@ -49,28 +53,33 @@ self.addEventListener('fetch', (event) => {
     }
 
     event.respondWith(
-        caches.match(event.request)
-            .then((cachedResponse) => {
-                if (cachedResponse) {
-                    return cachedResponse;
+        fetch(event.request)
+            .then((response) => {
+                if (!response || response.status !== 200) {
+                    return response;
                 }
 
-                return fetch(event.request)
-                    .then((response) => {
-                        // Don't cache non-successful responses
-                        if (!response || response.status !== 200) {
-                            return response;
+                const responseToCache = response.clone();
+
+                caches.open(CACHE_NAME)
+                    .then((cache) => {
+                        cache.put(event.request, responseToCache);
+                    });
+
+                return response;
+            })
+            .catch(() => {
+                return caches.match(event.request)
+                    .then((cachedResponse) => {
+                        if (cachedResponse) {
+                            return cachedResponse;
                         }
 
-                        // Clone the response
-                        const responseToCache = response.clone();
+                        if (isNavigationRequest(event.request)) {
+                            return caches.match('/index.html');
+                        }
 
-                        caches.open(CACHE_NAME)
-                            .then((cache) => {
-                                cache.put(event.request, responseToCache);
-                            });
-
-                        return response;
+                        return new Response('', { status: 504, statusText: 'Gateway Timeout' });
                     });
             })
     );

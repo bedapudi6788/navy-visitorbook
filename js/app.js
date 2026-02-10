@@ -31,6 +31,34 @@ let browseIsAnimating = false;
 
 // PWA install prompt
 let deferredInstallPrompt = null;
+let hasReloadedForUpdate = false;
+
+async function registerServiceWorker() {
+    const hadController = Boolean(navigator.serviceWorker.controller);
+
+    try {
+        const registration = await navigator.serviceWorker.register('/sw.js');
+        console.log('Service worker registered');
+
+        if (hadController) {
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (hasReloadedForUpdate) return;
+                hasReloadedForUpdate = true;
+                window.location.reload();
+            });
+        }
+
+        await registration.update();
+
+        setInterval(() => {
+            registration.update().catch((error) => {
+                console.log('Service worker update check failed:', error);
+            });
+        }, 5 * 60 * 1000);
+    } catch (error) {
+        console.log('Service worker registration failed:', error);
+    }
+}
 
 /**
  * Initialize the application
@@ -38,12 +66,7 @@ let deferredInstallPrompt = null;
 async function init() {
     // Register service worker
     if ('serviceWorker' in navigator) {
-        try {
-            await navigator.serviceWorker.register('/sw.js');
-            console.log('Service worker registered');
-        } catch (error) {
-            console.log('Service worker registration failed:', error);
-        }
+        await registerServiceWorker();
     }
 
     // Initialize storage
