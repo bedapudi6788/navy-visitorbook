@@ -1,4 +1,4 @@
-const CACHE_NAME = 'visitorbook-v6';
+const CACHE_NAME = 'visitorbook-v7';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
