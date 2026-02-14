@@ -175,6 +175,41 @@ function setupEventListeners() {
  */
 function setupInstallButton() {
     const installBtn = document.getElementById('btn-install-app');
+    if (!installBtn) return;
+
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    const isIOS = /iphone|ipad|ipod/.test(userAgent)
+        || (window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true;
+    const isSecureOrigin = window.isSecureContext;
+
+    const showInstallButton = () => {
+        installBtn.classList.remove('hidden');
+        installBtn.classList.add('flex');
+    };
+
+    const hideInstallButton = () => {
+        installBtn.classList.add('hidden');
+        installBtn.classList.remove('flex');
+    };
+
+    if (isStandalone) {
+        hideInstallButton();
+        return;
+    }
+
+    // iOS/iPadOS Safari does not fire beforeinstallprompt, so show manual-install help.
+    if (isIOS) {
+        showInstallButton();
+        installBtn.title = 'Use Share -> Add to Home Screen';
+    }
+
+    // Install prompt also requires HTTPS (or localhost). Show help instead of hiding forever.
+    if (!isSecureOrigin) {
+        showInstallButton();
+        console.log('PWA install prompt unavailable: secure context required (HTTPS or localhost).');
+    }
 
     // Listen for the beforeinstallprompt event
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -183,35 +218,45 @@ function setupInstallButton() {
         // Save the event for later use
         deferredInstallPrompt = e;
         // Show the install button
-        installBtn.classList.remove('hidden');
-        installBtn.classList.add('flex');
+        showInstallButton();
     });
 
     // Handle install button click
     installBtn.addEventListener('click', async () => {
-        if (!deferredInstallPrompt) return;
+        if (deferredInstallPrompt) {
+            // Show the browser's install prompt
+            deferredInstallPrompt.prompt();
 
-        // Show the browser's install prompt
-        deferredInstallPrompt.prompt();
+            // Wait for user response
+            const { outcome } = await deferredInstallPrompt.userChoice;
+            console.log('Install prompt outcome:', outcome);
 
-        // Wait for user response
-        const { outcome } = await deferredInstallPrompt.userChoice;
-        console.log('Install prompt outcome:', outcome);
+            // Clear the saved prompt (can only be used once)
+            deferredInstallPrompt = null;
 
-        // Clear the saved prompt (can only be used once)
-        deferredInstallPrompt = null;
+            // Hide the button
+            hideInstallButton();
+            return;
+        }
 
-        // Hide the button
-        installBtn.classList.add('hidden');
-        installBtn.classList.remove('flex');
+        if (isIOS) {
+            window.alert('To install on iPhone/iPad: tap Share, then "Add to Home Screen".');
+            return;
+        }
+
+        if (!isSecureOrigin) {
+            window.alert('Install requires HTTPS (or localhost). Open this app from a secure URL.');
+            return;
+        }
+
+        window.alert('Install prompt is not available in this browser yet.');
     });
 
     // Hide button if app is already installed
     window.addEventListener('appinstalled', () => {
         console.log('PWA was installed');
         deferredInstallPrompt = null;
-        installBtn.classList.add('hidden');
-        installBtn.classList.remove('flex');
+        hideInstallButton();
     });
 }
 
