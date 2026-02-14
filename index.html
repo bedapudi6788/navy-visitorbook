@@ -45,8 +45,8 @@
                 Archives
             </button>
 
-            <!-- Install App Button (left-middle, hidden by default) -->
-            <button id="btn-install-app" class="absolute top-1/2 -translate-y-1/2 left-6 z-10 hidden items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl border-2 border-white/40 transition-colors shadow-lg">
+            <!-- Install App Button (bottom-left, hidden by default until JS initializes) -->
+            <button id="btn-install-app" class="fixed bottom-6 left-6 z-10 hidden items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl border-2 border-white/40 transition-colors shadow-lg" style="left: max(1rem, calc(env(safe-area-inset-left) + 0.5rem)); bottom: max(1rem, calc(env(safe-area-inset-bottom) + 0.5rem));">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>

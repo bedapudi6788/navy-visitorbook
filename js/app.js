@@ -64,6 +64,9 @@ async function registerServiceWorker() {
  * Initialize the application
  */
 async function init() {
+    // Set up PWA install button early so init errors elsewhere don't hide it.
+    setupInstallButton();
+
     // Register service worker
     if ('serviceWorker' in navigator) {
         await registerServiceWorker();
@@ -80,9 +83,6 @@ async function init() {
 
     // Set up event listeners
     setupEventListeners();
-
-    // Set up PWA install button
-    setupInstallButton();
 
     // Show splash screen, then transition to home
     showScreen('splash');
@@ -199,15 +199,17 @@ function setupInstallButton() {
         return;
     }
 
+    // Keep the CTA visible on supported pages; click handler explains next steps
+    // if native prompt isn't available yet.
+    showInstallButton();
+
     // iOS/iPadOS Safari does not fire beforeinstallprompt, so show manual-install help.
     if (isIOS) {
-        showInstallButton();
         installBtn.title = 'Use Share -> Add to Home Screen';
     }
 
     // Install prompt also requires HTTPS (or localhost). Show help instead of hiding forever.
     if (!isSecureOrigin) {
-        showInstallButton();
         console.log('PWA install prompt unavailable: secure context required (HTTPS or localhost).');
     }
 
