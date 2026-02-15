@@ -4,7 +4,7 @@
 
 import { initCamera, getCurrentPhoto, setCurrentPhoto, clearPhoto, createPhotoURL, revokePhotoURL } from './camera.js';
 import { initCanvas, setColor, setThickness, clearCanvas, getCanvasDataURL, hasContent, resetDrawnState, setEraserMode } from './canvas.js';
-import { initDB, saveEntry, getAllEntries, blobToDataURL, dataURLToBlob, addVisitor, getAllVisitors, deleteVisitor, getVisitor, deleteAllEntries } from './storage.js';
+import { initDB, saveEntry, getAllEntries, blobToDataURL, dataURLToBlob, addVisitor, getAllVisitors, deleteVisitor, getVisitor, deleteEntry } from './storage.js';
 
 // Screen elements
 const screens = {
@@ -28,6 +28,7 @@ let selectedVisitorId = null;
 let browseEntries = [];
 let browseCurrentIndex = 0;
 let browseIsAnimating = false;
+let browseDeleteMode = false;
 
 // PWA install prompt
 let deferredInstallPrompt = null;
@@ -152,7 +153,9 @@ function setupEventListeners() {
         showScreen('home');
     });
     document.getElementById('btn-export-json').addEventListener('click', handleExportJSON);
-    document.getElementById('btn-delete-all').addEventListener('click', handleDeleteAll);
+    document.getElementById('btn-delete-all').addEventListener('click', toggleDeleteMode);
+    document.getElementById('btn-delete-selected').addEventListener('click', handleDeleteSelected);
+    document.getElementById('btn-cancel-delete').addEventListener('click', toggleDeleteMode);
     document.getElementById('btn-prev-page').addEventListener('click', () => {
         navigateBrowse('prev');
     });
@@ -659,6 +662,14 @@ async function loadBrowseScreen() {
 
     feedbackArea.innerHTML = '';
 
+    // Reset delete mode
+    browseDeleteMode = false;
+    document.getElementById('btn-delete-all').classList.remove('hidden');
+    document.getElementById('delete-actions').classList.add('hidden');
+    const deleteSelectedBtn = document.getElementById('btn-delete-selected');
+    deleteSelectedBtn.textContent = 'Delete Selected';
+    deleteSelectedBtn.disabled = true;
+
     try {
         const entries = await getAllEntries();
         browseEntries = entries;
@@ -716,7 +727,7 @@ function populateBrowseList() {
         const d = new Date(entry.timestamp);
         const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-        const item = document.createElement('button');
+        const item = document.createElement('div');
         item.className = 'browse-list-item flex items-center gap-3 p-2 rounded-xl text-left transition-all shrink-0';
         item.dataset.index = index;
         const browsePhotoHTML = entry.photo
@@ -724,6 +735,9 @@ function populateBrowseList() {
             : `<div class="w-10 h-10 rounded-full bg-book-leatherLight/50 flex items-center justify-center shrink-0 border-2 border-transparent"><svg class="w-5 h-5 text-book-warmGray" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg></div>`;
 
         item.innerHTML = `
+            <div class="browse-delete-checkbox hidden shrink-0 flex items-center justify-center">
+                <input type="checkbox" data-entry-id="${entry.id}" class="w-4 h-4 accent-red-500 cursor-pointer">
+            </div>
             ${browsePhotoHTML}
             <div class="min-w-0 flex-1">
                 <p class="text-sm text-book-warmLight truncate">${entry.name || 'Anonymous'}</p>
@@ -731,7 +745,18 @@ function populateBrowseList() {
             </div>
         `;
 
-        item.addEventListener('click', () => {
+        // Checkbox change handler
+        item.querySelector('.browse-delete-checkbox input').addEventListener('change', () => {
+            updateDeleteSelectedCount();
+        });
+
+        item.addEventListener('click', (e) => {
+            if (browseDeleteMode) {
+                const cb = item.querySelector('.browse-delete-checkbox input');
+                cb.checked = !cb.checked;
+                updateDeleteSelectedCount();
+                return;
+            }
             navigateBrowseToIndex(index);
         });
 
@@ -965,13 +990,55 @@ async function handleExportJSON() {
 }
 
 /**
- * Delete all entries after password verification
+ * Toggle delete mode on/off in the browse screen
  */
-async function handleDeleteAll() {
-    const password = prompt('Enter password to delete all entries:');
+function toggleDeleteMode() {
+    browseDeleteMode = !browseDeleteMode;
+
+    const deleteBtn = document.getElementById('btn-delete-all');
+    const deleteActions = document.getElementById('delete-actions');
+    const checkboxes = document.querySelectorAll('.browse-delete-checkbox');
+
+    if (browseDeleteMode) {
+        deleteBtn.classList.add('hidden');
+        deleteActions.classList.remove('hidden');
+        checkboxes.forEach(cb => cb.classList.remove('hidden'));
+    } else {
+        deleteBtn.classList.remove('hidden');
+        deleteActions.classList.add('hidden');
+        checkboxes.forEach(cb => {
+            cb.classList.add('hidden');
+            cb.querySelector('input').checked = false;
+        });
+        updateDeleteSelectedCount();
+    }
+}
+
+/**
+ * Update the "Delete Selected" button text with count
+ */
+function updateDeleteSelectedCount() {
+    const checked = document.querySelectorAll('.browse-delete-checkbox input:checked');
+    const btn = document.getElementById('btn-delete-selected');
+    btn.textContent = checked.length > 0 ? `Delete Selected (${checked.length})` : 'Delete Selected';
+    btn.disabled = checked.length === 0;
+}
+
+/**
+ * Delete selected entries after password verification
+ */
+async function handleDeleteSelected() {
+    const checked = document.querySelectorAll('.browse-delete-checkbox input:checked');
+    const selectedIds = Array.from(checked).map(cb => parseInt(cb.dataset.entryId));
+
+    if (selectedIds.length === 0) {
+        alert('No entries selected');
+        return;
+    }
+
+    const password = prompt('Enter password to delete selected entries:');
 
     if (password === null) {
-        // User cancelled
         return;
     }
 
@@ -980,17 +1047,19 @@ async function handleDeleteAll() {
         return;
     }
 
-    const confirmDelete = confirm('Are you sure you want to delete ALL entries? This cannot be undone.');
+    const confirmDelete = confirm(`Are you sure you want to delete ${selectedIds.length} selected ${selectedIds.length === 1 ? 'entry' : 'entries'}? This cannot be undone.`);
 
     if (!confirmDelete) {
         return;
     }
 
     try {
-        await deleteAllEntries();
-        alert('All entries deleted successfully');
+        for (const id of selectedIds) {
+            await deleteEntry(id);
+        }
+        alert(`${selectedIds.length} ${selectedIds.length === 1 ? 'entry' : 'entries'} deleted successfully`);
 
-        // Reload the browse screen to reflect the changes
+        browseDeleteMode = false;
         loadBrowseScreen();
     } catch (error) {
         console.error('Error deleting entries:', error);

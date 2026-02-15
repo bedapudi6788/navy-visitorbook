@@ -383,6 +383,15 @@ button:focus-visible, input:focus-visible {
     border-radius: 2px;
 }
 
+/* Browse delete checkboxes */
+.browse-delete-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #ef4444;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
 /* Responsive adjustments for portrait mode fallback */
 @media (orientation: portrait) {
     /* Feedback top bar: wrap items on narrow screens */
